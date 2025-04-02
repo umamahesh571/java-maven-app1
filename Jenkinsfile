@@ -24,7 +24,7 @@ pipeline {
             }
         }
         
-        stage('Build Artifact') {
+        stage('Build') {
             steps {
                 script {
                     sh 'mvn clean package'
@@ -32,11 +32,21 @@ pipeline {
             }
         }
         
-        stage('Build and Deploy Docker Container') {
+        stage('Build Docker Image') {
             steps {
                 script {
                     sh '''
+                        cp target/*.jar app.jar
                         docker build -t ${IMAGE_NAME} .
+                    '''
+                }
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                script {
+                    sh '''
                         docker stop ${CONTAINER_NAME} || true
                         docker rm ${CONTAINER_NAME} || true
                         docker run -d --name ${CONTAINER_NAME} -p ${PORT}:8080 ${IMAGE_NAME}
@@ -46,3 +56,4 @@ pipeline {
         }
     }
 }
+
