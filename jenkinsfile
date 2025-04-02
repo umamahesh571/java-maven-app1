@@ -4,7 +4,32 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: ''
+                git branch: 'main', url: 'https://github.com/umamahesh571/java-maven-app1.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                script {
+                    sh 'mvn clean package'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    sh '''
+                    cat > Dockerfile <<EOF
+                    FROM openjdk:latest
+                    COPY target/*.jar /app.jar
+                    ENTRYPOINT ["java", "-jar", "/app.jar"]
+                    EOF
+                    
+                    docker build -t my-java-app .
+                    docker run -d -p 8081:8081 -p 0.0.0.0:8081:8081 --name java-container my-java-app
+                    '''
+                }
             }
         }
     }
