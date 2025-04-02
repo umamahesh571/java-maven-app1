@@ -2,37 +2,47 @@ def gv
 
 pipeline {
     agent any
+    
+    environment {
+        REPO_URL = 'https://github.com/umamahesh571/java-maven-app1.git'
+        BRANCH = 'main'
+        IMAGE_NAME = 'java-maven-app1'
+        CONTAINER_NAME = 'java-maven-app1-container'
+        PORT = '8081'
+    }
+    
     stages {
-        stage("init") {
+        stage('Checkout Code') {
             steps {
                 script {
-                    gv = load "script.groovy"
+                    checkout([
+                        $class: 'GitSCM', 
+                        branches: [[name: "*/${BRANCH}"]], 
+                        userRemoteConfigs: [[url: REPO_URL]]
+                    ])
                 }
             }
         }
-        stage("build jar") {
+        
+        stage('Build Artifact') {
             steps {
                 script {
-                    echo "building jar"
-                    //gv.buildJar()
+                    sh 'mvn clean package'
                 }
             }
         }
-        stage("build image") {
+        
+        stage('Build and Deploy Docker Container') {
             steps {
                 script {
-                    echo "building image"
-                    //gv.buildImage()
+                    sh '''
+                        docker build -t ${IMAGE_NAME} .
+                        docker stop ${CONTAINER_NAME} || true
+                        docker rm ${CONTAINER_NAME} || true
+                        docker run -d --name ${CONTAINER_NAME} -p ${PORT}:8080 ${IMAGE_NAME}
+                    '''
                 }
             }
         }
-        stage("deploy") {
-            steps {
-                script {
-                    echo "deploying"
-                    //gv.deployApp()
-                }
-            }
-        }
-    }   
+    }
 }
