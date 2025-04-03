@@ -7,7 +7,7 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/umamahesh571/java-maven-app1.git'
             }
         }
-
+        
         stage('Build') {
             steps {
                 script {
@@ -15,17 +15,30 @@ pipeline {
                 }
             }
         }
-
-        stage('Deploy') {
+        
+        stage('Create Docker Image') {
             steps {
                 script {
                     sh '''
+                    cat > Dockerfile <<EOF
                     FROM openjdk:latest
                     COPY target/*.jar /app.jar
                     CMD ["java", "-jar", "/app.jar"]
+                    EOF
                     
-                    docker build -t my-java-app .
-                    docker run -d -p 8081:8081 --name java-container my-java-app
+                    docker build -t java-maven-app1 .
+                    '''
+                }
+            }
+        }
+        
+        stage('Deploy Container') {
+            steps {
+                script {
+                    sh '''
+                    docker stop java-maven-app1-container || true
+                    docker rm java-maven-app1-container || true
+                    docker run -d -p 8081:8081 --name java-maven-app1-container java-maven-app1
                     '''
                 }
             }
