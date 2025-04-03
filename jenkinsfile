@@ -23,7 +23,7 @@ pipeline {
                     cat > Dockerfile <<EOF
                     FROM openjdk:latest
                     COPY target/*.jar /app.jar
-                    ENTRYPOINT ["java", "-jar", "/app.jar"]
+                    CMD ["java", "-jar", "/app.jar"]
                     EOF
                     
                     docker build -t my-java-app .
