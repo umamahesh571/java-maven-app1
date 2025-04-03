@@ -16,7 +16,7 @@ pipeline {
             }
         }
         
-        stage('Create Docker Image') {
+        stage('Create and Push Docker Image') {
             steps {
                 script {
                     sh '''
@@ -26,19 +26,22 @@ pipeline {
                     CMD ["java", "-jar", "/app.jar"]
                     EOF
                     
-                    docker build -t java-maven-app1 .
+                    docker build -t umamahesh571/java-maven-app1 .
+                    docker login -u umamahesh571 -p Mahi66@66
+                    docker push umamahesh571/java-maven-app1
                     '''
                 }
             }
         }
         
-        stage('Deploy Container') {
+        stage('Deploy Container from Docker Hub') {
             steps {
                 script {
                     sh '''
                     docker stop java-maven-app1-container || true
                     docker rm java-maven-app1-container || true
-                    docker run -d -p 8081:8081 --name java-maven-app1-container java-maven-app1
+                    docker pull umamahesh571/java-maven-app1
+                    docker run -d -p 8081:8081 --name java-maven-app1-container umamahesh571/java-maven-app1
                     '''
                 }
             }
