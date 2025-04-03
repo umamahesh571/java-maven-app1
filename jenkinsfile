@@ -16,32 +16,29 @@ pipeline {
             }
         }
         
-        stage('Create and Push Docker Image') {
+        stage('Create Docker Image') {
             steps {
                 script {
                     sh '''
                     cat > Dockerfile <<EOF
-                    FROM openjdk:latest
+                    FROM openjdk:17-jdk-slim
                     COPY target/*.jar /app.jar
                     CMD ["java", "-jar", "/app.jar"]
                     EOF
                     
-                    docker build -t umamahesh571/java-maven-app1 .
-                    docker login -u umamahesh571 -p Mahi66@66
-                    docker push umamahesh571/java-maven-app1
+                    docker build -t java-maven-app1 .
                     '''
                 }
             }
         }
         
-        stage('Deploy Container from Docker Hub') {
+        stage('Deploy Container') {
             steps {
                 script {
                     sh '''
                     docker stop java-maven-app1-container || true
                     docker rm java-maven-app1-container || true
-                    docker pull umamahesh571/java-maven-app1
-                    docker run -d -p 8081:8081 --name java-maven-app1-container umamahesh571/java-maven-app1
+                    docker run -d -p 8081:8081 --name java-maven-app1-container java-maven-app1
                     '''
                 }
             }
